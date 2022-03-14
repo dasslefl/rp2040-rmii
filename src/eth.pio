@@ -1,0 +1,71 @@
+.program eth_rx
+
+
+.wrap_target
+    ; Scratch Y all high setzen, um damit Anzahl empfangener Wörter zu zählen
+    set Y, 0
+    mov Y, ~Y
+    ; Warten auf rising edge RXEN
+    wait 0 gpio 1
+    wait 1 gpio 1
+
+    ; Warten auf RX1 high -> SFD 
+    wait 1 gpio 3 [3] ; 3 Taktzyklen Delay für Synchronisierung (Scheint zu funktionieren :))
+
+    ; Loop braucht 3 Taktzyklen (150MHz / 3 = 50Mhz)
+rx_loop:
+    IN pins, 2 ; Sampling
+    jmp Y-- rx_next ; Y decrement, spring immer, wird aber nicht gebraucht
+rx_next:
+    jmp pin rx_loop ; Springen wenn Pin high -> Loop wird durchlaufen bis Paketende
+
+    ; Rest pushen
+    push
+    ; Register Y negiert ausgeben -> Zählt Anzahl Wörter
+    mov isr, ~Y
+    push [31] ; Warten damit DMA fertig ist
+
+    ; auf IRQ warten
+    irq wait 0
+.wrap
+
+
+; TX
+.program eth_tx
+
+; Side Set für TX enable
+.side_set 1 opt 
+
+
+.wrap_target
+
+    ; Lese Übertragungslänge ein (wartet automatisch auf Übertragung) & warten bis FIFO zumindest teilweise gefüllt
+    out Y, 32 [7]
+    ; Warte auf steigende Flanke Takt
+    ; Aufgrund Eingangs-Delay sorgt dies dafür, dass der GPIO an der falenden Flanke gesetzt wird
+    wait 0 gpio 21
+    wait 1 gpio 21
+
+    ; Sende-Schleife
+tx_loop:
+    out pins, 2 side 1 ; Daten senden
+    nop
+    jmp Y-- tx_loop
+
+    out pins, 2 side 1 ; letzte Daten nach Scleife senden, damit Timing für Frame-Ende passt
+    ; TX-En wieder 0 setzen (kurz nach fallender Flanke)
+    nop side 0
+
+    ; Ausgänge nullen (guter Ton xD)
+    set pins, 0
+
+    ; OSR leeren (damit keine Überbleibsel in nächsten Sendevorgang mitgenommen werden)
+tx_clr_loop:
+    out X, 1
+    jmp !osre tx_clr_loop
+
+    ; endlose Schleife zum Programmende
+tx_inf_loop:
+    jmp tx_inf_loop
+
+.wrap
