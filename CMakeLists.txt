@@ -9,10 +9,14 @@ project(rp2040-rmii)
 # initialize the Raspberry Pi Pico SDK
 pico_sdk_init()
 
+# LWIP Library
+
 # rest of your project
 add_executable(main
         src/main.c
         src/crc32.c
+        src/smi.c
+        src/eth.c
         )
 
 # PIO kompilieren
