@@ -24,6 +24,8 @@
 
 static uint8_t rx_buf[RX_BUF_SIZE_BYTES]; 
 
+static eth_tx_buf_t tx_buf;
+
 static uint rx_sm_num;
 static uint tx_sm_num;
 
@@ -178,6 +180,11 @@ void eth_transmit(eth_tx_buf_t * buf, uint len) {
     eth_transmit_raw((uint8_t *) buf, len);
 }
 
+void eth_transmit_bytes(uint8_t * bytes, uint len) {
+    memcpy(tx_buf.data, bytes, len);
+    eth_transmit(&tx_buf, len);
+}
+
 void eth_init_tx_buf(eth_tx_buf_t * buffer) {
     // Präambel setzen
     memcpy(buffer->preamble, ETH_PREAMBLE, ETH_PREAMBLE_SIZE);
@@ -211,6 +218,9 @@ void eth_init() {
     // Grundeinstellung: Auto Negotiation an
     smi_reg_set_bits(PHY_ADDR, PHY_REG_BCR, PHY_REG_BCR_AUTO_NEGOTIATION_ENABLE);
     //smi_reg_set_bits(PHY_ADDR, PHY_REG_BCR, PHY_REG_BCR_LOOPBACK | PHY_REG_BCR_SPEED_100 | PHY_REG_BCR_FULL_DUPLEX);
+
+    // Sendepuffer vorbereiten
+    eth_init_tx_buf(&tx_buf);
 
     eth_rx_init();
     eth_tx_init();

@@ -22,8 +22,6 @@
 #include "smi.h"
 #include "eth.h"
 
-eth_tx_buf_t buf;
-
 uint8_t tx_data[] = {
     0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 
     0xd4, 0x3d, 0x7e, 0xde, 0xad, 0x07, 
@@ -32,7 +30,6 @@ uint8_t tx_data[] = {
 };
 
 int main() {
-
     eth_init();
 
     // LED
@@ -46,15 +43,11 @@ int main() {
     }
 
     printf("Verbindung hergestellt.\n");
-
-    eth_init_tx_buf(&buf);
-
-    memcpy(buf.data, tx_data, sizeof(tx_data));
     
     while (true) {
         
         gpio_put(PICO_DEFAULT_LED_PIN, 1);
-        eth_transmit(&buf, sizeof(tx_data));
+        eth_transmit_bytes(tx_data, sizeof(tx_data));
         sleep_ms(500);
         gpio_put(PICO_DEFAULT_LED_PIN, 0);
         sleep_ms(500);

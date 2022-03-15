@@ -9,13 +9,14 @@
 
 typedef struct __attribute__((__packed__)) {
     uint8_t preamble[ETH_PREAMBLE_SIZE];
-    uint8_t data[1500];
+    uint8_t data[1540];
 } eth_tx_buf_t;
 
 bool eth_is_connected();
 void eth_init();
 void eth_init_tx_buf(eth_tx_buf_t * buffer);
 void eth_transmit(eth_tx_buf_t * buf, uint len);
+void eth_transmit_bytes(uint8_t * bytes, uint len);
 
 void eth_hexdump(const void* data, uint size);
 
