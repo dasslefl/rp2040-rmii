@@ -161,6 +161,9 @@ static void eth_tx_init() {
 }
 
 static void eth_transmit_raw(uint8_t * data, uint len) {
+    // es wird gerade gesendet
+    // Potentielle Race Condition: DMA komplett, Daten abr noch in FIFO
+    if(dma_channel_is_busy(tx_dma_chan)) return;
 
     uint8_t len_words = (len / sizeof(uint) + 1); // 1 Word mehr damit im Fall der Teilbarkeit die Schleife die den Fifo liest was zum Arbeiten hat
 
