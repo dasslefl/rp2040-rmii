@@ -46,10 +46,19 @@ int main() {
     
     while (true) {
         
-        gpio_put(PICO_DEFAULT_LED_PIN, 1);
+        /*gpio_put(PICO_DEFAULT_LED_PIN, 1);
         eth_transmit_bytes(tx_data, sizeof(tx_data));
         sleep_ms(500);
         gpio_put(PICO_DEFAULT_LED_PIN, 0);
-        sleep_ms(500);
+        sleep_ms(500);*/
+
+        uint rx_count = eth_get_rx_buf_count();
+        uint8_t * rx_buf = eth_get_rx_buf();
+        if(rx_count > 0) {
+            printf("\nLen %u\n", rx_count);
+            //eth_hexdump(rx_buf, rx_count);
+
+            eth_reset_rx_buf();
+        }
     }
 }

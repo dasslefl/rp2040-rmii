@@ -2,6 +2,8 @@
 
 
 .wrap_target
+    ; Scratch X 31 um FIFO zu leeren
+    set X, 31
     ; Scratch Y all high setzen, um damit Anzahl empfangener Wörter zu zählen
     set Y, 0
     mov Y, ~Y
@@ -19,14 +21,22 @@ rx_loop:
 rx_next:
     jmp pin rx_loop ; Springen wenn Pin high -> Loop wird durchlaufen bis Paketende
 
+    ; sicherstellen dass RX-FIFO leer ist
+rx_clr_loop:
+    in NULL, 1
+    jmp X-- rx_clr_loop
+
     ; Rest pushen
     push
     ; Register Y negiert ausgeben -> Zählt Anzahl Wörter
     mov isr, ~Y
     push [31] ; Warten damit DMA fertig ist
 
-    ; auf IRQ warten
-    irq wait 0
+    ; IRQ auslösen
+    irq 0
+
+rx_inf_loop:
+    jmp rx_inf_loop
 .wrap
 
 

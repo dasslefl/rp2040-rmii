@@ -23,6 +23,7 @@
 #include "eth.h"
 
 static uint8_t rx_buf[RX_BUF_SIZE_BYTES]; 
+static uint rx_buf_count = 0; // Anzahl Bytes in Puffer
 
 static eth_tx_buf_t tx_buf;
 
@@ -47,6 +48,9 @@ void eth_hexdump(const void* data, uint size) {
 }
 
 static void eth_rx_dma_init(uint8_t * target, uint len_words) {
+    if(rx_buf_count != 0) return; // Noch Daten in Empfangspuffer
+
+    dma_channel_abort(rx_dma_chan);
     // FIFOs löschen (reine Vorsicht)
     pio_sm_clear_fifos(ETH_PIO, rx_sm_num);
 
@@ -62,7 +66,9 @@ static void eth_rx_dma_init(uint8_t * target, uint len_words) {
         true                                // Start immediately
     );
 
-    ETH_PIO_HW->irq = 0x01; // ersten IRQ leeren, damit Loop weiter läuft
+    ETH_PIO_HW->irq = 0x01; 
+
+    pio_sm_exec(ETH_PIO, rx_sm_num, pio_encode_jmp(rx_sm_offset)); // Aus Endlosschleife springen, damit Programm weiter läuft
 }
 
 void eth_pio_interrupt_handler() {
@@ -74,15 +80,33 @@ void eth_pio_interrupt_handler() {
         // Paketlänge auslesen
         uint * rx_buf_32 = (uint *) rx_buf;
         // Anzahl empfangener 2 Bit Worte letztes Objekt in Speicher -> Auslesen und durch 4 teilen für Bytes
-        uint packet_len = rx_buf_32[dma_transfer_count - 1] / 4; 
+        uint packet_len_total = rx_buf_32[dma_transfer_count - 1] / 4; 
 
-        printf("\nDMA %u packet %u\n", dma_transfer_count, packet_len);
+        if(packet_len_total < 32) goto rearm;
 
-        eth_hexdump(rx_buf, packet_len);
+        uint packet_len = packet_len_total - CRC32_SIZE;
 
-        // DMA re-arm
-        eth_rx_dma_init(rx_buf, RX_BUF_SIZE_WORDS);
+        // CRC überprüfen
+        uint crc_calculated = crc32(rx_buf, packet_len);
+
+        uint crc_got;
+        memcpy(&crc_got, rx_buf + packet_len, CRC32_SIZE);
+
+        if(crc_got != crc_calculated) {
+            printf("Len %u CRC Err!\n", packet_len);
+            goto rearm;
+        }
+
+        rx_buf_count = packet_len;
+
+        ETH_PIO_HW->irq = 0x01; // IRQ stets leeren
     }
+
+    return;
+
+    rearm:
+    // DMA re-arm bei ungültigen Paket
+    eth_rx_dma_init(rx_buf, RX_BUF_SIZE_WORDS);
 }
 
 // RX initialisieren, only to be called once
@@ -197,7 +221,8 @@ void eth_init() {
     clock_gpio_init(PIN_ETH_CLK, CLOCKS_CLK_GPOUT0_CTRL_AUXSRC_VALUE_CLK_SYS, CLK_MULTIPLIER);
 
     sleep_ms(250);
-    stdio_init_all();
+    //stdio_init_all();
+    stdio_uart_init_full(uart0, 115200, 16, 17);
 
     // SMI
     smi_init();
@@ -229,4 +254,19 @@ void eth_init() {
 bool eth_is_connected() {
     return (!!smi_reg_read_bits(PHY_ADDR, PHY_REG_BSR, PHY_REG_BSR_LINK_UP)) &&
            (!!smi_reg_read_bits(PHY_ADDR, PHY_REG_BSR, PHY_REG_BSR_AUTO_NEGOTIATION_COMPLETE));
+}
+
+uint8_t * eth_get_rx_buf() {
+    return rx_buf;
+}
+
+uint eth_get_rx_buf_count() {
+    return rx_buf_count;
+}
+
+void eth_reset_rx_buf() {
+    if(rx_buf_count == 0) return;
+    // DMA neu starten
+    rx_buf_count = 0;
+    eth_rx_dma_init(rx_buf, RX_BUF_SIZE_WORDS);
 }
