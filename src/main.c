@@ -29,6 +29,8 @@ uint8_t tx_data[] = {
     0xde, 0xad, 0xbe, 0xef
 };
 
+uint timer_led;
+
 int main() {
     eth_init();
 
@@ -45,18 +47,17 @@ int main() {
     printf("Verbindung hergestellt.\n");
     
     while (true) {
-        
-        /*gpio_put(PICO_DEFAULT_LED_PIN, 1);
-        eth_transmit_bytes(tx_data, sizeof(tx_data));
-        sleep_ms(500);
-        gpio_put(PICO_DEFAULT_LED_PIN, 0);
-        sleep_ms(500);*/
+
+        if(eth_every_ms(&timer_led, 500)) {
+            gpio_put(PICO_DEFAULT_LED_PIN, !gpio_get(PICO_DEFAULT_LED_PIN));
+            eth_transmit_bytes(tx_data, sizeof(tx_data));
+        }
 
         uint rx_count = eth_get_rx_buf_count();
         uint8_t * rx_buf = eth_get_rx_buf();
         if(rx_count > 0) {
             printf("\nLen %u\n", rx_count);
-            //eth_hexdump(rx_buf, rx_count);
+            eth_hexdump(rx_buf, rx_count);
 
             eth_reset_rx_buf();
         }

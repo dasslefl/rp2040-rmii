@@ -270,3 +270,16 @@ void eth_reset_rx_buf() {
     rx_buf_count = 0;
     eth_rx_dma_init(rx_buf, RX_BUF_SIZE_WORDS);
 }
+
+uint eth_get_time_millis() {
+    return to_ms_since_boot(get_absolute_time());
+}
+
+bool eth_every_ms(uint * timer, uint interval) {
+    if(eth_get_time_millis() - *timer > interval) {
+        *timer = eth_get_time_millis();
+        return true;
+    } else {
+        return false;
+    }
+}

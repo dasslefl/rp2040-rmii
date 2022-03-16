@@ -23,6 +23,9 @@ uint8_t * eth_get_rx_buf();
 uint eth_get_rx_buf_count();
 void eth_reset_rx_buf();
 
+uint eth_get_time_millis();
+bool eth_every_ms(uint * timer, uint interval);
+
 void eth_hexdump(const void* data, uint size);
 
 #endif // __ETH_H__
