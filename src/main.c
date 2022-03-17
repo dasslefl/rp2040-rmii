@@ -47,6 +47,7 @@ int main() {
     printf("Verbindung hergestellt.\n");
     
     while (true) {
+        
         if(eth_every_ms(&timer_led, 500)) {
             gpio_put(PICO_DEFAULT_LED_PIN, !gpio_get(PICO_DEFAULT_LED_PIN));
             eth_transmit_bytes(tx_data, sizeof(tx_data));
