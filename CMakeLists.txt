@@ -17,6 +17,7 @@ add_executable(main
         src/crc32.c
         src/smi.c
         src/eth.c
+        src/dma_accel.c
         )
 
 # PIO kompilieren
