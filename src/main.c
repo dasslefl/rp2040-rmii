@@ -5,58 +5,45 @@
 
 #include "pico/stdlib.h"
 
-#include "hardware/pll.h"
-#include "hardware/clocks.h"
-#include "hardware/pio.h"
-#include "hardware/dma.h"
-#include "hardware/irq.h"
+#include "eth_lwip.h"
 
-#include "hardware/structs/bus_ctrl.h"
-#include "hardware/structs/pll.h"
-#include "hardware/structs/clocks.h"
+#include "lwip/dhcp.h"
+#include "lwip/init.h"
 
-#include "eth.pio.h"
+#include "lwip/apps/httpd.h"
 
-#include "crc32.h"
-#include "hardware.h"
-#include "smi.h"
-#include "eth.h"
-#include "dma_accel.h"
+void netif_link_callback(struct netif *netif) {
+    printf("netif link status changed %s\n", netif_is_link_up(netif) ? "up" : "down");
+}
 
-uint8_t tx_data[] = "Lorem Ipsum sit";
-
-uint timer_led;
+void netif_status_callback(struct netif *netif) {
+    printf("netif status changed %s\n", ip4addr_ntoa(netif_ip4_addr(netif)));
+}
 
 int main() {
-    eth_init();
 
-    // LED
+    struct netif netif;
+
+    eth_lwip_init(&netif);
+
+    /*
     gpio_init(PICO_DEFAULT_LED_PIN);
-    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
-    
-    
-    // Auf Verbindung warten
-    while(!eth_is_connected()) {
-        printf("Warte auf Verbindung...\n");
-        sleep_ms(500);
-    }
+    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);*/
 
-    printf("Verbindung hergestellt.\n");
+    // assign callbacks for link and status
+    netif_set_link_callback(&netif, netif_link_callback);
+    netif_set_status_callback(&netif, netif_status_callback);
+
+    // set the default interface and bring it up
+    netif_set_default(&netif);
+    netif_set_up(&netif);
+
+    // Start DHCP client
+    dhcp_start(&netif);
+    
+    // httpd_init();
     
     while (true) {
-        
-        if(eth_every_ms(&timer_led, 500)) {
-            gpio_put(PICO_DEFAULT_LED_PIN, !gpio_get(PICO_DEFAULT_LED_PIN));
-            eth_transmit_bytes(tx_data, sizeof(tx_data));
-        }
-
-        uint rx_count = eth_get_rx_buf_count();
-        uint8_t * rx_buf = eth_get_rx_buf();
-        if(rx_count > 0) {
-            printf("\nLen %u\n", rx_count);
-            eth_hexdump(rx_buf, rx_count);
-
-            eth_reset_rx_buf();
-        }
+        eth_lwip_poll();
     }
 }

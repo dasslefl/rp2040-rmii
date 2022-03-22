@@ -25,7 +25,7 @@
 static uint8_t rx_buf[RX_BUF_SIZE_BYTES]; 
 static uint rx_buf_count = 0; // Anzahl Bytes in Puffer
 
-static eth_tx_buf_t tx_buf;
+//static eth_tx_buf_t tx_buf;
 
 static uint rx_sm_num;
 static uint tx_sm_num;
@@ -160,10 +160,10 @@ static void eth_tx_init() {
     pio_sm_init(ETH_PIO, tx_sm_num, tx_sm_offset, &c);
 }
 
-static void eth_transmit_raw(uint8_t * data, uint len) {
+static bool eth_transmit_raw(uint8_t * data, uint len) {
     // es wird gerade gesendet
     // Potentielle Race Condition: DMA komplett, Daten abr noch in FIFO
-    if(dma_channel_is_busy(tx_dma_chan)) return;
+    if(dma_channel_is_busy(tx_dma_chan)) return false;
 
     uint8_t len_words = (len / sizeof(uint) + 1); // 1 Word mehr damit im Fall der Teilbarkeit die Schleife die den Fifo liest was zum Arbeiten hat
 
@@ -189,9 +189,12 @@ static void eth_transmit_raw(uint8_t * data, uint len) {
     // SM wieder starten, an Anfang springen
     pio_sm_set_enabled(ETH_PIO, tx_sm_num, true);
     pio_sm_exec(ETH_PIO, tx_sm_num, pio_encode_jmp(tx_sm_offset));
+
+    return true;
 }
 
-void eth_transmit(eth_tx_buf_t * buf, uint len) {
+// Fügt nach Padding Präambel und CRC an
+bool eth_transmit(eth_tx_buf_t * buf, uint len) {
     // Muss Paket auf 64 Byte aufgefüllt werden?
     if(len < ETH_MIN_PAYLOAD_LEN) {
         memset(buf->data + len, 0, ETH_MIN_PAYLOAD_LEN - len);
@@ -204,12 +207,16 @@ void eth_transmit(eth_tx_buf_t * buf, uint len) {
 
     len += CRC32_SIZE + ETH_PREAMBLE_SIZE;
 
-    eth_transmit_raw((uint8_t *) buf, len);
+    return eth_transmit_raw((uint8_t *) buf, len);
 }
 
-void eth_transmit_bytes(uint8_t * bytes, uint len) {
+/*bool eth_transmit_bytes(uint8_t * bytes, uint len) {
     memcpy(tx_buf.data, bytes, len);
-    eth_transmit(&tx_buf, len);
+    return eth_transmit(&tx_buf, len);
+}*/
+
+void eth_wait_for_transmit_done() {
+    dma_channel_wait_for_finish_blocking(tx_dma_chan);
 }
 
 void eth_init_tx_buf(eth_tx_buf_t * buffer) {
@@ -248,7 +255,7 @@ void eth_init() {
     //smi_reg_set_bits(PHY_ADDR, PHY_REG_BCR, PHY_REG_BCR_LOOPBACK | PHY_REG_BCR_SPEED_100 | PHY_REG_BCR_FULL_DUPLEX);
 
     // Sendepuffer vorbereiten
-    eth_init_tx_buf(&tx_buf);
+    //eth_init_tx_buf(&tx_buf);
 
     eth_rx_init();
     eth_tx_init();
