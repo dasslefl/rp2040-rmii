@@ -23,7 +23,7 @@
 #include "eth.h"
 #include "dma_accel.h"
 
-uint8_t tx_data[] = "Lorem ipsum sit dolo8 amed";
+uint8_t tx_data[] = "Lorem Ipsum sit";
 
 uint timer_led;
 
@@ -33,27 +33,6 @@ int main() {
     // LED
     gpio_init(PICO_DEFAULT_LED_PIN);
     gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);
-
-    /*
-    while (true) {
-
-        printf("%08x\n\n", crc32(tx_data, sizeof(tx_data)));
-
-        uint seed = 0x00000000;
-
-        printf("%08x\n", dma_accel_crc32(tx_data, sizeof(tx_data), 0x00, seed));
-        printf("%08x\n", dma_accel_crc32(tx_data, sizeof(tx_data), 0x00, ~seed));
-        printf("%08x\n", dma_accel_crc32(tx_data, sizeof(tx_data), 0x01, seed));
-        printf("%08x\n", dma_accel_crc32(tx_data, sizeof(tx_data), 0x01, ~seed));
-
-        printf("%08x\n", ~dma_accel_crc32(tx_data, sizeof(tx_data), 0x00, seed));
-        printf("%08x\n", ~dma_accel_crc32(tx_data, sizeof(tx_data), 0x00, ~seed));
-        printf("%08x\n", ~dma_accel_crc32(tx_data, sizeof(tx_data), 0x01, seed));
-        printf("%08x\n", ~dma_accel_crc32(tx_data, sizeof(tx_data), 0x01, ~seed));
-
-        printf("\n");
-        sleep_ms(500);
-    }*/
     
     
     // Auf Verbindung warten
