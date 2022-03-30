@@ -64,6 +64,7 @@
 #define TCPIP_DEBUG                     LWIP_DBG_ON
 #define DHCP_DEBUG                      LWIP_DBG_ON
 #define UDP_DEBUG                       LWIP_DBG_ON
+#define HTTPD_DEBUG                     LWIP_DBG_ON
 #endif
 
 

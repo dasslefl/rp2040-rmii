@@ -16,7 +16,7 @@
 
 typedef struct __attribute__((__packed__)) {
     uint8_t preamble[ETH_PREAMBLE_SIZE];
-    uint8_t data[ETH_TX_MAX_LEN];
+    uint8_t data[ETH_TX_MAX_LEN + 4]; // DMA überträgt eventuell 1 Word mehr
 } eth_tx_buf_t;
 
 bool eth_is_connected();

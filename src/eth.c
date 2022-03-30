@@ -165,7 +165,7 @@ static bool eth_transmit_raw(uint8_t * data, uint len) {
     // Potentielle Race Condition: DMA komplett, Daten abr noch in FIFO
     if(dma_channel_is_busy(tx_dma_chan)) return false;
 
-    uint8_t len_words = (len / sizeof(uint) + 1); // 1 Word mehr damit im Fall der Teilbarkeit die Schleife die den Fifo liest was zum Arbeiten hat
+    uint len_words = (len / sizeof(uint) + 1); // 1 Word mehr damit im Fall der Teilbarkeit die Schleife die den Fifo liest was zum Arbeiten hat
 
     // SM anhalten, FIFOs löschen
     pio_sm_set_enabled(ETH_PIO, tx_sm_num, false);
