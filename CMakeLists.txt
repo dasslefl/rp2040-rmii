@@ -79,4 +79,7 @@ pico_generate_pio_header(rp2040_rmii ${CMAKE_CURRENT_LIST_DIR}/src/eth.pio)
 # Pull in our pico_stdlib which pulls in commonly used features
 target_link_libraries(rp2040_rmii INTERFACE hardware_pio hardware_dma pico_stdlib pico_unique_id pico_lwip hardware_irq)
 
-add_subdirectory("examples/httpd")
+# Only build examples if toplevel
+if(${CMAKE_PROJECT_NAME} STREQUAL ${PROJECT_NAME})
+    add_subdirectory("examples/httpd")
+endif()
