@@ -4,7 +4,7 @@ cmake_minimum_required(VERSION 3.13)
 # note: this must happen before project()
 include(pico_sdk_import.cmake)
 
-project(rp2040-rmii)
+project(rp2040_rmii)
 
 # initialize the Raspberry Pi Pico SDK
 pico_sdk_init()
@@ -57,25 +57,26 @@ target_include_directories(pico_lwip INTERFACE
 	${CMAKE_CURRENT_LIST_DIR}/src/lwip
 )
 
-# rest of your project
-add_executable(main
-        src/main.c
-        src/crc32.c
-        src/smi.c
-        src/eth.c
-        src/dma_accel.c
-        src/eth_lwip.c
-        )
+# Ethernet-Teil der Lib
+add_library(rp2040_rmii INTERFACE)
+
+target_sources(rp2040_rmii INTERFACE
+    ${CMAKE_CURRENT_LIST_DIR}/src/crc32.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/smi.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/eth.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/dma_accel.c
+    ${CMAKE_CURRENT_LIST_DIR}/src/eth_lwip.c
+)
+
+target_include_directories(pico_lwip INTERFACE
+	${LWIP_PATH}/src/include
+	${CMAKE_CURRENT_LIST_DIR}/src/include
+)
 
 # PIO kompilieren
-pico_generate_pio_header(main ${CMAKE_CURRENT_LIST_DIR}/src/eth.pio)
+pico_generate_pio_header(rp2040_rmii ${CMAKE_CURRENT_LIST_DIR}/src/eth.pio)
 
 # Pull in our pico_stdlib which pulls in commonly used features
-target_link_libraries(main hardware_pio hardware_dma pico_stdlib pico_unique_id pico_lwip hardware_irq)
+target_link_libraries(rp2040_rmii INTERFACE hardware_pio hardware_dma pico_stdlib pico_unique_id pico_lwip hardware_irq)
 
-# enable usb output, disable uart output
-pico_enable_stdio_usb(main 0)
-pico_enable_stdio_uart(main 1)
-
-# create map/bin/hex file etc.
-pico_add_extra_outputs(main)
+add_subdirectory("examples/httpd")

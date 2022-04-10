@@ -4,9 +4,8 @@
 
 #include "pico/stdlib.h"
 
-#include "hardware.h"
-
-#include "smi.h"
+#include "include/hardware.h"
+#include "include/smi.h"
 
 #define SMI_OPCODE_READ 0b10
 #define SMI_OPCODE_WRITE 0b01

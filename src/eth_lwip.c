@@ -7,8 +7,8 @@
 #include <stdbool.h>
 #include <string.h>
 
-#include "eth.h"
-#include "eth_lwip.h"
+#include "include/eth.h"
+#include "include/eth_lwip.h"
 
 #include "pico/stdlib.h"
 #include "pico/unique_id.h"

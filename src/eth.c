@@ -17,10 +17,10 @@
 
 #include "eth.pio.h"
 
-#include "crc32.h"
-#include "hardware.h"
-#include "smi.h"
-#include "eth.h"
+#include "include/crc32.h"
+#include "include/hardware.h"
+#include "include/smi.h"
+#include "include/eth.h"
 
 static uint8_t rx_buf[RX_BUF_SIZE_BYTES]; 
 static uint rx_buf_count = 0; // Anzahl Bytes in Puffer
@@ -231,8 +231,9 @@ void eth_init() {
     clock_gpio_init(PIN_ETH_CLK, CLOCKS_CLK_GPOUT0_CTRL_AUXSRC_VALUE_CLK_SYS, CLK_MULTIPLIER);
 
     sleep_ms(250);
-    //stdio_init_all();
-    stdio_uart_init_full(uart0, 115200, 16, 17);
+
+    stdio_init_all();
+    //stdio_uart_init_full(uart0, 115200, 16, 17);
 
     // SMI
     smi_init();

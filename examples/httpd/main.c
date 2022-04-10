@@ -33,10 +33,6 @@ int main() {
 
     eth_lwip_init(&netif);
 
-    /*
-    gpio_init(PICO_DEFAULT_LED_PIN);
-    gpio_set_dir(PICO_DEFAULT_LED_PIN, GPIO_OUT);*/
-
     // assign callbacks for link and status
     netif_set_link_callback(&netif, netif_link_callback);
     netif_set_status_callback(&netif, netif_status_callback);

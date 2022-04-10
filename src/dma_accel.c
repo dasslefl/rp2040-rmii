@@ -51,6 +51,7 @@ inline static uint32_t reverseBits(uint32_t n) {
     return n;
 }
 
+// Funktioniert zzt nicht
 uint dma_accel_crc32(uint8_t * buf, uint size, uint seed, uint algo, bool byte_swap) {
 
     uint transfer_count = size / sizeof(uint); // Anzahl 32 Bit Transfers
