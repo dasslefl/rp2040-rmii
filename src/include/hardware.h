@@ -12,18 +12,18 @@
 
 // PINS
 #define PIN_ETH_CLK     21
-#define PIN_ETH_RST     22
+#define PIN_ETH_RST     20
 
-#define PIN_ETH_MDC     20
-#define PIN_ETH_MDIO    19
+#define PIN_ETH_MDC     19
+#define PIN_ETH_MDIO    18
 
-#define PIN_ETH_RX_EN   1
-#define PIN_ETH_RX_0    2
-#define PIN_ETH_RX_1    3
+#define PIN_ETH_RX_EN   0
+#define PIN_ETH_RX_0    1
+#define PIN_ETH_RX_1    2
 
-#define PIN_ETH_TX_EN   4
-#define PIN_ETH_TX_0    5
-#define PIN_ETH_TX_1    6
+#define PIN_ETH_TX_EN   3
+#define PIN_ETH_TX_0    4
+#define PIN_ETH_TX_1    5
 
 #define ETH_PIO         pio0
 #define ETH_PIO_HW      pio0_hw

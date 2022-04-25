@@ -8,11 +8,11 @@
     set Y, 0
     mov Y, ~Y
     ; Warten auf rising edge RXEN
-    wait 0 gpio 1
-    wait 1 gpio 1
+    wait 0 gpio 0
+    wait 1 gpio 0
 
     ; Warten auf RX1 high -> SFD 
-    wait 1 gpio 3 [3] ; 3 Taktzyklen Delay für Synchronisierung (Scheint zu funktionieren :))
+    wait 1 gpio 2 [3] ; 3 Taktzyklen Delay für Synchronisierung (Scheint zu funktionieren :))
 
     ; Loop braucht 3 Taktzyklen (150MHz / 3 = 50Mhz)
 rx_loop:
